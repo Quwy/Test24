@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{FCC82F5B-FE7C-41F0-8B03-0683A7A528A0}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="LibVidgets.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="HostApp.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="LibVidgets">
+        <MSBuild Projects="LibVidgets.dproj"/>
+    </Target>
+    <Target Name="LibVidgets:Clean">
+        <MSBuild Projects="LibVidgets.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="LibVidgets:Make">
+        <MSBuild Projects="LibVidgets.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="HostApp">
+        <MSBuild Projects="HostApp.dproj"/>
+    </Target>
+    <Target Name="HostApp:Clean">
+        <MSBuild Projects="HostApp.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="HostApp:Make">
+        <MSBuild Projects="HostApp.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="LibVidgets;HostApp"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="LibVidgets:Clean;HostApp:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="LibVidgets:Make;HostApp:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
