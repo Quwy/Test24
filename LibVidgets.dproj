@@ -103,6 +103,7 @@
         <DCCReference Include="Source\uVidgetSharedTypes.pas"/>
         <DCCReference Include="Source\uVidgetsProcs.pas"/>
         <DCCReference Include="Source\uVidgetsClasses.pas"/>
+        <DCCReference Include="Source\uInternalTypes.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

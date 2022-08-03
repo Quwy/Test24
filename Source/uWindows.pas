@@ -1,8 +1,12 @@
+{ Windows-specific code only here.
+  All OsXXX funtions teorethically can be realized for any platform. }
+
 unit uWindows;
 
 interface
 
 uses
+  uInternalTypes,
   uVidgetSharedTypes,
   Winapi.Windows,
   Winapi.Messages,
@@ -179,3 +183,4 @@ begin
 end;
 
 end.
+

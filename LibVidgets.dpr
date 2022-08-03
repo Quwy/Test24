@@ -1,14 +1,16 @@
+{ DLL wrapper to the internal vidgets API
+  All function descriptions see in the uVidgetsProcs unit }
+
 library LibVidgets;
 
 uses
   System.SysUtils,
   System.Classes,
-
   uWindows in 'Source\uWindows.pas',
   uVidgetSharedTypes in 'Source\uVidgetSharedTypes.pas',
   uVidgetsProcs in 'Source\uVidgetsProcs.pas',
-  uVidgetsClasses in 'Source\uVidgetsClasses.pas';
-
+  uVidgetsClasses in 'Source\uVidgetsClasses.pas',
+  uInternalTypes in 'Source\uInternalTypes.pas';
 
 {$R *.res}
 

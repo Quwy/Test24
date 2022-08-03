@@ -1,3 +1,5 @@
+{ internal vidgets API }
+
 unit uVidgetsProcs;
 
 interface
@@ -9,16 +11,25 @@ uses
   System.SysUtils,
   System.Types;
 
+// return error text by error code
 function VgErrorText(const ErrorCode: LongWord): UnicodeString;
 
+// initialize surface. Container is a OS-specific window handle
 function VgInit(const Container: NativeUInt): LongWord;
+// deinitialize surface and restore OS-specific window
 function VgDeinit: LongWord;
+// force repaint OS-specific window and surface
 function VgRepaint: LongWord;
 
+// create new widget class with own look and behaviour to use it many times
 function VgCreateVidgetClass(const ClassName: UnicodeString; const PaintProc: TWidgetPaintProc; const EventProc: TWidgetSystemEventProc): LongWord;
+// create new widget on the surface
 function VgCreateVidget(const ClassName: UnicodeString; const ParentID: NativeUInt; const WidgetProps: TWidgetProps; const UserData: Pointer; const EventProc: TWidgetUserEventProc; out ID: NativeUInt): LongWord;
+// function to simplify VgCreateVidget call
 function VgCreateWidgetProps(const Color: Cardinal; const Left, Top, Width, Height: Integer): TWidgetProps;
+// update user-defined data associated with vidget and force it to update itself on the surface
 function VgUpdateWidgetUserData(const ID: NativeUInt; const UserData: Pointer): LongWord;
+// toggle vidget visibility
 function VgUpdateWidgetVisibility(const ID: NativeUInt; const Visible: Boolean): LongWord;
 
 
@@ -181,17 +192,20 @@ begin
     Result := VG_ERROR_WIDGET_NOT_FOUND;
 end;
 
+// standart PANEL vidget painter
 procedure PanelPaintProc(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; WidgetProps: PWidgetProps; var UserData: Pointer); stdcall;
 begin
   PaintAPI.FillRect(WidgetProps^.Color, WidgetProps^.Dimensions.Left, WidgetProps^.Dimensions.Top, WidgetProps^.Dimensions.Left + WidgetProps^.Dimensions.Width, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height);
 end;
 
+// standart LABEL vidget painter
 procedure LabelPaintProc(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; WidgetProps: PWidgetProps; var UserData: Pointer); stdcall;
 begin
   PaintAPI.FillRect(WidgetProps^.Color, WidgetProps^.Dimensions.Left, WidgetProps^.Dimensions.Top, WidgetProps^.Dimensions.Left + WidgetProps^.Dimensions.Width, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height);
   PaintAPI.OutText(OsRGB(0, 0, 0), WidgetProps^.Dimensions.Left, WidgetProps^.Dimensions.Top, WidgetProps^.Dimensions.Left + WidgetProps^.Dimensions.Width, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height, PWideChar(UserData));
 end;
 
+// standart BUTTON vidget painter
 procedure ButtonPaintProc(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; WidgetProps: PWidgetProps; var UserData: Pointer); stdcall;
 begin
   PaintAPI.FillRect(WidgetProps^.Color, WidgetProps^.Dimensions.Left, WidgetProps^.Dimensions.Top, WidgetProps^.Dimensions.Left + WidgetProps^.Dimensions.Width, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height);
@@ -199,6 +213,7 @@ begin
   PaintAPI.OutText(OsRGB(0, 0, 0), WidgetProps^.Dimensions.Left, WidgetProps^.Dimensions.Top, WidgetProps^.Dimensions.Left + WidgetProps^.Dimensions.Width, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height, PWideChar(UserData));
 end;
 
+// standart BUTTON vidget animator and event repeater to the user-defined handler
 procedure ButtonSystemEventProc(ClassName: PWideChar; ID: NativeUInt; EventAPI: TEventAPI; WidgetProps: PWidgetProps; var UserData: Pointer); stdcall;
 var
   Widget: TChildWidget;
@@ -221,6 +236,7 @@ end;
 
 procedure CreateStdClasses;
 begin
+  // here are created all "standart" vidgets, included in the library
   VgCreateVidgetClass('PANEL', PanelPaintProc, nil);
   VgCreateVidgetClass('LABEL', LabelPaintProc, nil);
   VgCreateVidgetClass('BUTTON', ButtonPaintProc, ButtonSystemEventProc);
@@ -234,3 +250,4 @@ finalization
   ClassHeaders.Free;
 
 end.
+

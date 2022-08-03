@@ -1,3 +1,6 @@
+{ Simple Delphi wrapper for LibVidgets.dll library
+  All function descriptions see in the uVidgetsProcs unit }
+
 unit uVidgetsDllWrapper;
 
 interface
@@ -15,14 +18,15 @@ function CreateWidgetProps(const Color: Cardinal; const Left, Top, Width, Height
 function UpdateWidgetUserData(const ID: NativeUInt; const UserData: Pointer): LongWord; stdcall;
 function UpdateWidgetVisibility(const ID: NativeUInt; const Visible: Boolean): LongWord; stdcall;
 
-procedure CheckVidget(const ErrorCode: LongWord);
+// like another delphi functions for instant returned error checking
+procedure VidgetCheck(const ErrorCode: LongWord);
 
 implementation
 
 uses
   System.SysUtils;
 
-procedure CheckVidget(const ErrorCode: LongWord);
+procedure VidgetCheck(const ErrorCode: LongWord);
 begin
   if ErrorCode <> VG_ERROR_SUCCESS then
     Exception.Create(ErrorText(ErrorCode));
@@ -41,5 +45,5 @@ function CreateWidgetProps; stdcall; external LIB_VIDGETS;
 function UpdateWidgetUserData; stdcall; external LIB_VIDGETS;
 function UpdateWidgetVisibility; stdcall; external LIB_VIDGETS;
 
-
 end.
+
