@@ -277,23 +277,9 @@ begin
 end;
 
 function TChildWidget.InRange(const Point: TPoint): Boolean;
-var
-  AbsoluteLeft, AbsoluteTop: Integer;
-  NextParent: TWidget;
 begin
-  AbsoluteLeft := Dimensions.Left;
-  AbsoluteTop := Dimensions.Top;
-
-  NextParent := FParent;
-  while NextParent is TChildWidget do
-    begin
-      Inc(AbsoluteLeft, NextParent.Dimensions.Left);
-      Inc(AbsoluteTop, NextParent.Dimensions.Top);
-      NextParent := TChildWidget(NextParent).Parent;
-    end;
-
-  Result := (Point.X >= AbsoluteLeft) and (Point.X <= AbsoluteLeft + FWidgetProps.Dimensions.Width) and
-            (Point.Y >= AbsoluteTop) and (Point.Y <= AbsoluteTop + FWidgetProps.Dimensions.Height);
+  Result := (Point.X >= Dimensions.Left) and (Point.X <= Dimensions.Left + FWidgetProps.Dimensions.Width) and
+            (Point.Y >= Dimensions.Top) and (Point.Y <= Dimensions.Top + FWidgetProps.Dimensions.Height);
 end;
 
 procedure TChildWidget.NormalizeDimensions(var Dimensions: TWidgetDimensions);

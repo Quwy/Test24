@@ -6,6 +6,7 @@ object fHostForm: TfHostForm
   ClientHeight = 441
   ClientWidth = 624
   Color = clBtnFace
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12

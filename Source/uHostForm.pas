@@ -14,7 +14,7 @@ type
     procedure ProgressTimerTimer(Sender: TObject);
   public
     Progress: LongWord;
-    ProgressButtonID, HideButtonID, ProgressBarID: NativeUInt;
+    ProgressButtonID, HidePanelID, HideButtonID, ProgressBarID: NativeUInt;
   end;
 
 var
@@ -37,8 +37,8 @@ begin
         fHostForm.ProgressTimer.Enabled := True;
       end;
 
-  if ID = fHostForm.HideButtonID then
-    CheckVidget(UpdateWidgetVisibility(ID, False));
+  if (ID = fHostForm.HideButtonID) and (EventAPI.EventType = etMouseUp) then
+    CheckVidget(UpdateWidgetVisibility(fHostForm.HidePanelID, False));
 end;
 
 procedure ProgressBarPaintProc(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; WidgetProps: PWidgetProps; var UserData: Pointer); stdcall;
@@ -73,10 +73,13 @@ begin
   CheckVidget(CreateVidget('PANEL', 0, CreateWidgetProps(LongWord(clWhite), 10, 10, 300, 300), nil, nil, PnlID));
   CheckVidget(CreateVidget('LABEL', PnlID, CreateWidgetProps(LongWord(clSilver), 10, 10, 360, 20), PWideChar('Label not fit to parent'), nil, DummyID));
   CheckVidget(CreateVidget('BUTTON', PnlID, CreateWidgetProps(LongWord(clSilver), 10, 60, 100, 30), PWideChar('Start!'), ButtonClick, ProgressButtonID));
-  CheckVidget(CreateVidget('BUTTON', PnlID, CreateWidgetProps(LongWord(clSilver), 10, 140, 100, 30), PWideChar('Hide me'), ButtonClick, HideButtonID));
+
+  CheckVidget(CreateVidget('PANEL', PnlID, CreateWidgetProps(LongWord(clDkGray), 10, 210, 180, 50), nil, nil, HidePanelID));
+  CheckVidget(CreateVidget('BUTTON', HidePanelID, CreateWidgetProps(LongWord(clSilver), 10, 10, 120, 30), PWideChar('Hide my parent'), ButtonClick, HideButtonID));
 
   CheckVidget(CreateVidgetClass('PROGRESSBAR', ProgressBarPaintProc, nil));
   CheckVidget(CreateVidget('PROGRESSBAR', PnlID, CreateWidgetProps(LongWord(clSilver), 10, 100, 100, 30), @Progress, nil, ProgressBarID));
+  CheckVidget(CreateVidget('LABEL', PnlID, CreateWidgetProps(LongWord(clWhite), 120, 105, 120, 20), PWideChar('(custom progress bar)'), nil, DummyID));
 end;
 
 procedure TfHostForm.FormDestroy(Sender: TObject);
