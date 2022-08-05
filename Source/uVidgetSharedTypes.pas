@@ -28,23 +28,23 @@ type
     Position: TPoint;
     // many other events and its dependecities implied here
   end;
-  // widget rectangle
-  TWidgetDimensions = record
+  // Vidget rectangle
+  TVidgetDimensions = record
     Left, Top, Width, Height: Integer;
   end;
-  // basic widget properties
-  TWidgetProps = record
+  // basic Vidget properties
+  TVidgetProps = record
     Color: Cardinal;
-    Dimensions: TWidgetDimensions;
+    Dimensions: TVidgetDimensions;
   end;
-  PWidgetProps = ^TWidgetProps;
+  PVidgetProps = ^TVidgetProps;
 
-  // widget paint method
-  TWidgetPaintProc = procedure(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; WidgetProps: PWidgetProps; var UserData: Pointer); stdcall;
-  // widget event method for visualise any reaction on the events
-  TWidgetSystemEventProc = procedure(ClassName: PWideChar; ID: NativeUInt; EventAPI: TEventAPI; WidgetProps: PWidgetProps; var UserData: Pointer); stdcall;
+  // Vidget paint method
+  TVidgetPaintProc = procedure(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; VidgetProps: PVidgetProps; var UserData: Pointer); stdcall;
+  // Vidget event method for visualise any reaction on the events
+  TVidgetSystemEventProc = procedure(ClassName: PWideChar; ID: NativeUInt; EventAPI: TEventAPI; VidgetProps: PVidgetProps; var UserData: Pointer); stdcall;
   // user defined event handler (such as OnClick or OnMouseDown)
-  TWidgetUserEventProc = procedure(ClassName: PWideChar; ID: NativeUInt; EventAPI: TEventAPI; WidgetProps: TWidgetProps; var UserData: Pointer); stdcall;
+  TVidgetUserEventProc = procedure(ClassName: PWideChar; ID: NativeUInt; EventAPI: TEventAPI; VidgetProps: TVidgetProps; var UserData: Pointer); stdcall;
 
 const
   VG_ERROR_SUCCESS = 0;
@@ -53,7 +53,7 @@ const
   VG_ERROR_CLASS_ALREADY_REGISTERED = 3;
   VG_ERROR_CLASS_NOT_REGISTERED = 4;
   VG_ERROR_PARENT_NOT_FOUND = 5;
-  VG_ERROR_WIDGET_NOT_FOUND = 6;
+  VG_ERROR_Vidget_NOT_FOUND = 6;
 
 implementation
 

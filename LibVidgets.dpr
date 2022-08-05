@@ -34,29 +34,29 @@ begin
   Result := VgRepaint;
 end;
 
-function CreateVidgetClass(const ClassName: UnicodeString; const PaintProc: TWidgetPaintProc; const EventProc: TWidgetSystemEventProc): LongWord; stdcall;
+function CreateVidgetClass(const ClassName: UnicodeString; const PaintProc: TVidgetPaintProc; const EventProc: TVidgetSystemEventProc): LongWord; stdcall;
 begin
   Result := VgCreateVidgetClass(ClassName, PaintProc, EventProc);
 end;
 
-function CreateVidget(const ClassName: UnicodeString; const ParentID: NativeUInt; const WidgetProps: TWidgetProps; const UserData: Pointer; const EventProc: TWidgetUserEventProc; out ID: NativeUInt): LongWord; stdcall;
+function CreateVidget(const ClassName: UnicodeString; const ParentID: NativeUInt; const VidgetProps: TVidgetProps; const UserData: Pointer; const EventProc: TVidgetUserEventProc; out ID: NativeUInt): LongWord; stdcall;
 begin
-  Result := VgCreateVidget(ClassName, ParentID, WidgetProps, UserData, EventProc, ID);
+  Result := VgCreateVidget(ClassName, ParentID, VidgetProps, UserData, EventProc, ID);
 end;
 
-function CreateWidgetProps(const Color: Cardinal; const Left, Top, Width, Height: Integer): TWidgetProps; stdcall;
+function CreateVidgetProps(const Color: Cardinal; const Left, Top, Width, Height: Integer): TVidgetProps; stdcall;
 begin
-  Result := VgCreateWidgetProps(Color, Left, Top, Width, Height);
+  Result := VgCreateVidgetProps(Color, Left, Top, Width, Height);
 end;
 
-function UpdateWidgetUserData(const ID: NativeUInt; const UserData: Pointer): LongWord; stdcall;
+function UpdateVidgetUserData(const ID: NativeUInt; const UserData: Pointer): LongWord; stdcall;
 begin
-  Result := VgUpdateWidgetUserData(ID, UserData);
+  Result := VgUpdateVidgetUserData(ID, UserData);
 end;
 
-function UpdateWidgetVisibility(const ID: NativeUInt; const Visible: Boolean): LongWord; stdcall;
+function UpdateVidgetVisibility(const ID: NativeUInt; const Visible: Boolean): LongWord; stdcall;
 begin
-  Result := VgUpdateWidgetVisibility(ID, Visible);
+  Result := VgUpdateVidgetVisibility(ID, Visible);
 end;
 
 exports
@@ -66,9 +66,9 @@ exports
   Repaint,
   CreateVidgetClass,
   CreateVidget,
-  CreateWidgetProps,
-  UpdateWidgetUserData,
-  UpdateWidgetVisibility;
+  CreateVidgetProps,
+  UpdateVidgetUserData,
+  UpdateVidgetVisibility;
 
 begin
   {$IFDEF DEBUG}

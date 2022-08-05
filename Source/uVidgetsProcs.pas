@@ -21,16 +21,16 @@ function VgDeinit: LongWord;
 // force repaint OS-specific window and surface
 function VgRepaint: LongWord;
 
-// create new widget class with own look and behaviour to use it many times
-function VgCreateVidgetClass(const ClassName: UnicodeString; const PaintProc: TWidgetPaintProc; const EventProc: TWidgetSystemEventProc): LongWord;
-// create new widget on the surface
-function VgCreateVidget(const ClassName: UnicodeString; const ParentID: NativeUInt; const WidgetProps: TWidgetProps; const UserData: Pointer; const EventProc: TWidgetUserEventProc; out ID: NativeUInt): LongWord;
+// create new Vidget class with own look and behaviour to use it many times
+function VgCreateVidgetClass(const ClassName: UnicodeString; const PaintProc: TVidgetPaintProc; const EventProc: TVidgetSystemEventProc): LongWord;
+// create new Vidget on the surface
+function VgCreateVidget(const ClassName: UnicodeString; const ParentID: NativeUInt; const VidgetProps: TVidgetProps; const UserData: Pointer; const EventProc: TVidgetUserEventProc; out ID: NativeUInt): LongWord;
 // function to simplify VgCreateVidget call
-function VgCreateWidgetProps(const Color: Cardinal; const Left, Top, Width, Height: Integer): TWidgetProps;
+function VgCreateVidgetProps(const Color: Cardinal; const Left, Top, Width, Height: Integer): TVidgetProps;
 // update user-defined data associated with vidget and force it to update itself on the surface
-function VgUpdateWidgetUserData(const ID: NativeUInt; const UserData: Pointer): LongWord;
+function VgUpdateVidgetUserData(const ID: NativeUInt; const UserData: Pointer): LongWord;
 // toggle vidget visibility
-function VgUpdateWidgetVisibility(const ID: NativeUInt; const Visible: Boolean): LongWord;
+function VgUpdateVidgetVisibility(const ID: NativeUInt; const Visible: Boolean): LongWord;
 
 
 implementation
@@ -54,21 +54,21 @@ const
      'Class name already registered',
      'Class name not registered',
      'Parent not found',
-     'Widget not found',
+     'Vidget not found',
      'Invalid error code');
 
 var
-  RootWidget: TWidget;
+  RootVidget: TVidget;
   ClassHeaders: TClassHeaders;
 
 procedure PaintProc(const PaintAPI: TPaintAPI);
 begin
-  RootWidget.Paint(PaintAPI);
+  RootVidget.Paint(PaintAPI);
 end;
 
 procedure EventProc(const EventAPI: TEventAPI);
 begin
-  RootWidget.Event(EventAPI);
+  RootVidget.Event(EventAPI);
 end;
 
 function VgErrorText(const ErrorCode: LongWord): UnicodeString;
@@ -85,7 +85,7 @@ var
 begin
   if OsInitContainer(Container, PaintProc, EventProc, Width, Height) then
     begin
-      RootWidget := TWidget.Create(OsRGB(64, 64, 64), Width, Height);
+      RootVidget := TVidget.Create(OsRGB(64, 64, 64), Width, Height);
       Result := VG_ERROR_SUCCESS;
     end
   else
@@ -96,14 +96,14 @@ function VgDeinit: LongWord;
 begin
   if OsDeinitContainer then
     begin
-      RootWidget.Free;
+      RootVidget.Free;
       Result := VG_ERROR_SUCCESS;
     end
   else
     Result := VG_ERROR_NOT_INITIALIZED;
 end;
 
-function VgCreateVidgetClass(const ClassName: UnicodeString; const PaintProc: TWidgetPaintProc; const EventProc: TWidgetSystemEventProc): LongWord;
+function VgCreateVidgetClass(const ClassName: UnicodeString; const PaintProc: TVidgetPaintProc; const EventProc: TVidgetSystemEventProc): LongWord;
 begin
   if ClassHeaders.IndexOfName(ClassName) <= 0 then
     begin
@@ -114,11 +114,11 @@ begin
     Result := VG_ERROR_CLASS_ALREADY_REGISTERED;
 end;
 
-function VgCreateVidget(const ClassName: UnicodeString; const ParentID: NativeUInt; const WidgetProps: TWidgetProps; const UserData: Pointer; const EventProc: TWidgetUserEventProc; out ID: NativeUInt): LongWord;
+function VgCreateVidget(const ClassName: UnicodeString; const ParentID: NativeUInt; const VidgetProps: TVidgetProps; const UserData: Pointer; const EventProc: TVidgetUserEventProc; out ID: NativeUInt): LongWord;
 var
   ClassIdx: Integer;
-  Widget: TChildWidget;
-  ParentWidget: TWidget;
+  Vidget: TChildVidget;
+  ParentVidget: TVidget;
 begin
   ClassIdx := ClassHeaders.IndexOfName(ClassName);
   if ClassIdx >= 0 then
@@ -127,25 +127,25 @@ begin
 
       if ParentID > 0 then
         begin
-          ParentWidget := RootWidget.WidgetByID(ParentID);
-          if not Assigned(ParentWidget) then
+          ParentVidget := RootVidget.VidgetByID(ParentID);
+          if not Assigned(ParentVidget) then
             Result := VG_ERROR_PARENT_NOT_FOUND;
         end
       else
-        ParentWidget := RootWidget;
+        ParentVidget := RootVidget;
 
       if Result = VG_ERROR_SUCCESS then
         begin
-          Widget := TChildWidget.Create(ClassName, ParentWidget, WidgetProps, ClassHeaders[ClassIdx].PaintProc, ClassHeaders[ClassIdx].SystemEventProc, UserData);
-          Widget.UserEventProc := EventProc;
-          ID := Widget.ID;
+          Vidget := TChildVidget.Create(ClassName, ParentVidget, VidgetProps, ClassHeaders[ClassIdx].PaintProc, ClassHeaders[ClassIdx].SystemEventProc, UserData);
+          Vidget.UserEventProc := EventProc;
+          ID := Vidget.ID;
         end;
     end
   else
     Result := VG_ERROR_CLASS_NOT_REGISTERED;
 end;
 
-function VgCreateWidgetProps(const Color: Cardinal; const Left, Top, Width, Height: Integer): TWidgetProps;
+function VgCreateVidgetProps(const Color: Cardinal; const Left, Top, Width, Height: Integer): TVidgetProps;
 begin
   Result.Color := Color;
   Result.Dimensions.Left := Left;
@@ -162,76 +162,76 @@ begin
     Result := VG_ERROR_NOT_INITIALIZED;
 end;
 
-function VgUpdateWidgetUserData(const ID: NativeUInt; const UserData: Pointer): LongWord;
+function VgUpdateVidgetUserData(const ID: NativeUInt; const UserData: Pointer): LongWord;
 var
-  Widget: TChildWidget;
+  Vidget: TChildVidget;
 begin
-  Widget := RootWidget.WidgetByID(ID);
-  if Assigned(Widget) then
+  Vidget := RootVidget.VidgetByID(ID);
+  if Assigned(Vidget) then
     begin
-      Widget.UserData := UserData;
-      Widget.Parent.NeedRepaint;
+      Vidget.UserData := UserData;
+      Vidget.Parent.NeedRepaint;
       Result := VG_ERROR_SUCCESS;
     end
   else
-    Result := VG_ERROR_WIDGET_NOT_FOUND;
+    Result := VG_ERROR_Vidget_NOT_FOUND;
 end;
 
-function VgUpdateWidgetVisibility(const ID: NativeUInt; const Visible: Boolean): LongWord;
+function VgUpdateVidgetVisibility(const ID: NativeUInt; const Visible: Boolean): LongWord;
 var
-  Widget: TChildWidget;
+  Vidget: TChildVidget;
 begin
-  Widget := RootWidget.WidgetByID(ID);
-  if Assigned(Widget) then
+  Vidget := RootVidget.VidgetByID(ID);
+  if Assigned(Vidget) then
     begin
-      Widget.Vidible := Visible;
-      Widget.NeedRepaint;
+      Vidget.Vidible := Visible;
+      Vidget.NeedRepaint;
       Result := VG_ERROR_SUCCESS;
     end
   else
-    Result := VG_ERROR_WIDGET_NOT_FOUND;
+    Result := VG_ERROR_Vidget_NOT_FOUND;
 end;
 
 // standart PANEL vidget painter
-procedure PanelPaintProc(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; WidgetProps: PWidgetProps; var UserData: Pointer); stdcall;
+procedure PanelPaintProc(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; VidgetProps: PVidgetProps; var UserData: Pointer); stdcall;
 begin
-  PaintAPI.FillRect(WidgetProps^.Color, WidgetProps^.Dimensions.Left, WidgetProps^.Dimensions.Top, WidgetProps^.Dimensions.Left + WidgetProps^.Dimensions.Width, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height);
+  PaintAPI.FillRect(VidgetProps^.Color, VidgetProps^.Dimensions.Left, VidgetProps^.Dimensions.Top, VidgetProps^.Dimensions.Left + VidgetProps^.Dimensions.Width, VidgetProps^.Dimensions.Top + VidgetProps^.Dimensions.Height);
 end;
 
 // standart LABEL vidget painter
-procedure LabelPaintProc(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; WidgetProps: PWidgetProps; var UserData: Pointer); stdcall;
+procedure LabelPaintProc(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; VidgetProps: PVidgetProps; var UserData: Pointer); stdcall;
 begin
-  PaintAPI.FillRect(WidgetProps^.Color, WidgetProps^.Dimensions.Left, WidgetProps^.Dimensions.Top, WidgetProps^.Dimensions.Left + WidgetProps^.Dimensions.Width, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height);
-  PaintAPI.OutText(OsRGB(0, 0, 0), WidgetProps^.Dimensions.Left, WidgetProps^.Dimensions.Top, WidgetProps^.Dimensions.Left + WidgetProps^.Dimensions.Width, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height, PWideChar(UserData));
+  PaintAPI.FillRect(VidgetProps^.Color, VidgetProps^.Dimensions.Left, VidgetProps^.Dimensions.Top, VidgetProps^.Dimensions.Left + VidgetProps^.Dimensions.Width, VidgetProps^.Dimensions.Top + VidgetProps^.Dimensions.Height);
+  PaintAPI.OutText(OsRGB(0, 0, 0), VidgetProps^.Dimensions.Left, VidgetProps^.Dimensions.Top, VidgetProps^.Dimensions.Left + VidgetProps^.Dimensions.Width, VidgetProps^.Dimensions.Top + VidgetProps^.Dimensions.Height, PWideChar(UserData));
 end;
 
 // standart BUTTON vidget painter
-procedure ButtonPaintProc(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; WidgetProps: PWidgetProps; var UserData: Pointer); stdcall;
+procedure ButtonPaintProc(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; VidgetProps: PVidgetProps; var UserData: Pointer); stdcall;
 begin
-  PaintAPI.FillRect(WidgetProps^.Color, WidgetProps^.Dimensions.Left, WidgetProps^.Dimensions.Top, WidgetProps^.Dimensions.Left + WidgetProps^.Dimensions.Width, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height);
-  PaintAPI.DrawRect(OsRGB(0, 0, 0), WidgetProps^.Dimensions.Left + 1, WidgetProps^.Dimensions.Top + 1, WidgetProps^.Dimensions.Left + WidgetProps^.Dimensions.Width - 1, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height - 1);
-  PaintAPI.OutText(OsRGB(0, 0, 0), WidgetProps^.Dimensions.Left, WidgetProps^.Dimensions.Top, WidgetProps^.Dimensions.Left + WidgetProps^.Dimensions.Width, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height, PWideChar(UserData));
+  PaintAPI.FillRect(VidgetProps^.Color, VidgetProps^.Dimensions.Left, VidgetProps^.Dimensions.Top, VidgetProps^.Dimensions.Left + VidgetProps^.Dimensions.Width, VidgetProps^.Dimensions.Top + VidgetProps^.Dimensions.Height);
+  PaintAPI.DrawRect(OsRGB(0, 0, 0), VidgetProps^.Dimensions.Left + 1, VidgetProps^.Dimensions.Top + 1, VidgetProps^.Dimensions.Left + VidgetProps^.Dimensions.Width - 1, VidgetProps^.Dimensions.Top + VidgetProps^.Dimensions.Height - 1);
+  PaintAPI.OutText(OsRGB(0, 0, 0), VidgetProps^.Dimensions.Left, VidgetProps^.Dimensions.Top, VidgetProps^.Dimensions.Left + VidgetProps^.Dimensions.Width, VidgetProps^.Dimensions.Top + VidgetProps^.Dimensions.Height, PWideChar(UserData));
 end;
 
 // standart BUTTON vidget animator and event repeater to the user-defined handler
-procedure ButtonSystemEventProc(ClassName: PWideChar; ID: NativeUInt; EventAPI: TEventAPI; WidgetProps: PWidgetProps; var UserData: Pointer); stdcall;
+procedure ButtonSystemEventProc(ClassName: PWideChar; ID: NativeUInt; EventAPI: TEventAPI; VidgetProps: PVidgetProps; var UserData: Pointer); stdcall;
 var
-  Widget: TChildWidget;
+  Vidget: TChildVidget;
 begin
   case EventAPI.EventType of
     etMouseDn:
       begin
-        WidgetProps^.Color := WidgetProps^.Color - OsRGB(30, 30, 30);
+        VidgetProps^.Color := VidgetProps^.Color - OsRGB(30, 30, 30); // for such a beat on the hands
       end;
     etMouseUp:
       begin
-        WidgetProps^.Color := WidgetProps^.Color + OsRGB(30, 30, 30);
+        VidgetProps^.Color := VidgetProps^.Color + OsRGB(30, 30, 30);
       end;
   end;
 
-  Widget := RootWidget.WidgetByID(ID);
-  if Assigned(Widget) and Assigned(Widget.UserEventProc) then
-    Widget.UserEventProc(ClassName, ID, EventAPI, WidgetProps^, UserData);
+  Vidget := RootVidget.VidgetByID(ID);
+  if Assigned(Vidget) and Assigned(Vidget.UserEventProc) then
+    Vidget.UserEventProc(ClassName, ID, EventAPI, VidgetProps^, UserData);
 end;
 
 procedure CreateStdClasses;

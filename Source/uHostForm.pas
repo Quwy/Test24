@@ -28,7 +28,7 @@ uses
   uVidgetsDllWrapper, uVidgetSharedTypes;
 
 // general handler for all buttons, but it is not mandatory, separate handlers also fully allowed
-procedure ButtonClick(ClassName: PWideChar; ID: NativeUInt; EventAPI: TEventAPI; WidgetProps: TWidgetProps; var UserData: Pointer); stdcall;
+procedure ButtonClick(ClassName: PWideChar; ID: NativeUInt; EventAPI: TEventAPI; VidgetProps: TVidgetProps; var UserData: Pointer); stdcall;
 begin
   // handle events for button "Start!"
   if ID = fHostForm.ProgressButtonID then
@@ -41,11 +41,11 @@ begin
 
   // handle events for button "Hide my parent"
   if (ID = fHostForm.HideButtonID) and (EventAPI.EventType = etMouseUp) then
-    VidgetCheck(UpdateWidgetVisibility(fHostForm.HidePanelID, False));
+    VidgetCheck(UpdateVidgetVisibility(fHostForm.HidePanelID, False));
 end;
 
 // custom PROGRESSBAR vidget painter
-procedure ProgressBarPaintProc(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; WidgetProps: PWidgetProps; var UserData: Pointer); stdcall;
+procedure ProgressBarPaintProc(ClassName: PWideChar; ID: NativeUInt; PaintAPI: TPaintAPI; VidgetProps: PVidgetProps; var UserData: Pointer); stdcall;
 const
   MIN = 0;
   MAX = 100;
@@ -54,16 +54,16 @@ var
   Len: Integer;
 begin
   Position := PLongWord(UserData)^;
-  Len := Trunc(((WidgetProps^.Dimensions.Width - 2) / (MAX - MIN)) * Position);
+  Len := Trunc(((VidgetProps^.Dimensions.Width - 2) / (MAX - MIN)) * Position);
 
   if Position < 100 then
     Color := LongWord(clBlue)
   else
     Color := LongWord(clRed);
 
-  PaintAPI.FillRect(WidgetProps^.Color, WidgetProps^.Dimensions.Left, WidgetProps^.Dimensions.Top, WidgetProps^.Dimensions.Left + WidgetProps^.Dimensions.Width, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height);
-  PaintAPI.FillRect(Color, WidgetProps^.Dimensions.Left + 1, WidgetProps^.Dimensions.Top + 1, WidgetProps^.Dimensions.Left + 1 + Len, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height - 1);
-  PaintAPI.OutText(LongWord(clBlack), WidgetProps^.Dimensions.Left, WidgetProps^.Dimensions.Top, WidgetProps^.Dimensions.Left + WidgetProps^.Dimensions.Width, WidgetProps^.Dimensions.Top + WidgetProps^.Dimensions.Height, PWideChar(IntToStr(Position) + '%'));
+  PaintAPI.FillRect(VidgetProps^.Color, VidgetProps^.Dimensions.Left, VidgetProps^.Dimensions.Top, VidgetProps^.Dimensions.Left + VidgetProps^.Dimensions.Width, VidgetProps^.Dimensions.Top + VidgetProps^.Dimensions.Height);
+  PaintAPI.FillRect(Color, VidgetProps^.Dimensions.Left + 1, VidgetProps^.Dimensions.Top + 1, VidgetProps^.Dimensions.Left + 1 + Len, VidgetProps^.Dimensions.Top + VidgetProps^.Dimensions.Height - 1);
+  PaintAPI.OutText(LongWord(clBlack), VidgetProps^.Dimensions.Left, VidgetProps^.Dimensions.Top, VidgetProps^.Dimensions.Left + VidgetProps^.Dimensions.Width, VidgetProps^.Dimensions.Top + VidgetProps^.Dimensions.Height, PWideChar(IntToStr(Position) + '%'));
 end;
 
 procedure TfHostForm.FormCreate(Sender: TObject);
@@ -76,20 +76,20 @@ begin
   VidgetCheck(Init(Handle));
 
   // creating some standart vidgets
-  VidgetCheck(CreateVidget('PANEL', 0, CreateWidgetProps(LongWord(clWhite), 10, 10, 300, 300), nil, nil, PnlID));
-  VidgetCheck(CreateVidget('LABEL', PnlID, CreateWidgetProps(LongWord(clSilver), 10, 10, 360, 20), PWideChar('Label not fit to parent'), nil, DummyID));
-  VidgetCheck(CreateVidget('BUTTON', PnlID, CreateWidgetProps(LongWord(clSilver), 10, 60, 100, 30), PWideChar('Start!'), ButtonClick, ProgressButtonID));
+  VidgetCheck(CreateVidget('PANEL', 0, CreateVidgetProps(LongWord(clWhite), 10, 10, 300, 300), nil, nil, PnlID));
+  VidgetCheck(CreateVidget('LABEL', PnlID, CreateVidgetProps(LongWord(clSilver), 10, 10, 360, 20), PWideChar('Label not fit to parent'), nil, DummyID));
+  VidgetCheck(CreateVidget('BUTTON', PnlID, CreateVidgetProps(LongWord(clSilver), 10, 60, 100, 30), PWideChar('Start!'), ButtonClick, ProgressButtonID));
 
   // creating some standart vidgets
-  VidgetCheck(CreateVidget('PANEL', PnlID, CreateWidgetProps(LongWord(clDkGray), 10, 210, 200, 70), nil, nil, HidePanelID));
-  VidgetCheck(CreateVidget('BUTTON', HidePanelID, CreateWidgetProps(LongWord(clSilver), 10, 10, 120, 30), PWideChar('Hide my parent'), ButtonClick, HideButtonID));
+  VidgetCheck(CreateVidget('PANEL', PnlID, CreateVidgetProps(LongWord(clDkGray), 10, 210, 200, 70), nil, nil, HidePanelID));
+  VidgetCheck(CreateVidget('BUTTON', HidePanelID, CreateVidgetProps(LongWord(clSilver), 10, 10, 120, 30), PWideChar('Hide my parent'), ButtonClick, HideButtonID));
 
   // defining new vidget type
   VidgetCheck(CreateVidgetClass('PROGRESSBAR', ProgressBarPaintProc, nil));
 
   // creating some user-defined vidget and test label near it
-  VidgetCheck(CreateVidget('PROGRESSBAR', PnlID, CreateWidgetProps(LongWord(clSilver), 10, 100, 100, 30), @Progress, nil, ProgressBarID));
-  VidgetCheck(CreateVidget('LABEL', PnlID, CreateWidgetProps(LongWord(clWhite), 120, 105, 120, 20), PWideChar('(custom progress bar)'), nil, DummyID));
+  VidgetCheck(CreateVidget('PROGRESSBAR', PnlID, CreateVidgetProps(LongWord(clSilver), 10, 100, 100, 30), @Progress, nil, ProgressBarID));
+  VidgetCheck(CreateVidget('LABEL', PnlID, CreateVidgetProps(LongWord(clWhite), 120, 105, 120, 20), PWideChar('(custom progress bar)'), nil, DummyID));
 end;
 
 procedure TfHostForm.FormDestroy(Sender: TObject);
@@ -104,7 +104,7 @@ begin
       Inc(Progress);
       try
         // updating progress
-        VidgetCheck(UpdateWidgetUserData(ProgressBarID, @Progress));
+        VidgetCheck(UpdateVidgetUserData(ProgressBarID, @Progress));
       except
         (Sender as TTimer).Enabled := False;
         raise;

@@ -1,4 +1,4 @@
-{ internal representation of the widgets and some other classes }
+{ internal representation of the Vidgets and some other classes }
 
 unit uVidgetsClasses;
 
@@ -15,26 +15,26 @@ type
   // record for store vidget "class" declaration
   TClassHeader = record
     Name: UnicodeString; // name of the "class"
-    PaintProc: TWidgetPaintProc; // widget paint method
-    SystemEventProc: TWidgetSystemEventProc; // system event handler (used to draw some responce on the event)
-    class function Create(const Name: UnicodeString; const PaintProc: TWidgetPaintProc; const EventProc: TWidgetSystemEventProc): TClassHeader; static;
+    PaintProc: TVidgetPaintProc; // Vidget paint method
+    SystemEventProc: TVidgetSystemEventProc; // system event handler (used to draw some responce on the event)
+    class function Create(const Name: UnicodeString; const PaintProc: TVidgetPaintProc; const EventProc: TVidgetSystemEventProc): TClassHeader; static;
   end;
 
 type
-  TChildWidget = class;
+  TChildVidget = class;
 
-  // root pseudo-panel (stretched to whole OS window), used as parent for all bottom-level widgets
-  // also base class for all widgets
-  TWidget = class(TObject)
+  // root pseudo-panel (stretched to whole OS window), used as parent for all bottom-level Vidgets
+  // also base class for all Vidgets
+  TVidget = class(TObject)
   private
-    FChilds: TList<TChildWidget>; // any widgets can be parent, such as the modern FireMonkey framework
+    FChilds: TList<TChildVidget>; // any Vidgets can be parent, such as the modern FireMonkey framework
     procedure SetColor(const Value: Cardinal);
     function GetColor: Cardinal;
-    function GetDimensions: TWidgetDimensions;
+    function GetDimensions: TVidgetDimensions;
   protected
-    FWidgetProps: TWidgetProps;
-    procedure AddChild(const Child: TChildWidget);
-    procedure RemoveChild(const Child: TChildWidget);
+    FVidgetProps: TVidgetProps;
+    procedure AddChild(const Child: TChildVidget);
+    procedure RemoveChild(const Child: TChildVidget);
     procedure FreeChilds;
     function GetID: NativeUInt; virtual;
   public
@@ -43,34 +43,34 @@ type
     procedure Paint(const PaintAPI: TPaintAPI); virtual;
     function Event(const EventAPI: TEventAPI): Boolean; virtual;
     procedure NeedRepaint; virtual;
-    function WidgetByID(const ID: NativeUInt): TChildWidget;
+    function VidgetByID(const ID: NativeUInt): TChildVidget;
 
     property Color: Cardinal read GetColor write SetColor;
-    property Dimensions: TWidgetDimensions read GetDimensions;
+    property Dimensions: TVidgetDimensions read GetDimensions;
     property ID: NativeUInt read GetID;
   end;
 
-  // widget class. one for all
+  // Vidget class. one for all
   // look of the vidget is defined by FPaintProc handler
   // visial reaction on the events is defined by FSystemEventProc handler
-  TChildWidget = class(TWidget)
+  TChildVidget = class(TVidget)
   private
     FClassName: UnicodeString;
-    FParent: TWidget;
+    FParent: TVidget;
     FUserData: Pointer;
-    FPaintProc: TWidgetPaintProc;
-    FSystemEventProc: TWidgetSystemEventProc;
-    FUserEventProc: TWidgetUserEventProc; // user defined event handler (such as OnClick or OnMouseDown)
+    FPaintProc: TVidgetPaintProc;
+    FSystemEventProc: TVidgetSystemEventProc;
+    FUserEventProc: TVidgetUserEventProc; // user defined event handler (such as OnClick or OnMouseDown)
     FVisible: Boolean;
     procedure DoPaint(const PaintAPI: TPaintAPI);
     function DoEvent(const EventAPI: TEventAPI): Boolean;
     procedure SetVisible(const Value: Boolean);
-    procedure NormalizeDimensions(var Dimensions: TWidgetDimensions);
+    procedure NormalizeDimensions(var Dimensions: TVidgetDimensions);
   protected
-    function GetWidgetProps: TWidgetProps;
+    function GetVidgetProps: TVidgetProps;
     function GetID: NativeUInt; override;
   public
-    constructor Create(const ClassName: string; const Parent: TWidget; const WidgetData: TWidgetProps; const PaintProc: TWidgetPaintProc; const SystemEventProc: TWidgetSystemEventProc; const UserData: Pointer);
+    constructor Create(const ClassName: string; const Parent: TVidget; const VidgetData: TVidgetProps; const PaintProc: TVidgetPaintProc; const SystemEventProc: TVidgetSystemEventProc; const UserData: Pointer);
     destructor Destroy; override;
     procedure Paint(const PaintAPI: TPaintAPI); override;
     function Event(const EventAPI: TEventAPI): Boolean; override;
@@ -78,9 +78,9 @@ type
 
     property Vidible: Boolean read FVisible write SetVisible;
     property UserData: Pointer read FUserData write FUserData;
-    property WidgetClassName: UnicodeString read FClassName;
-    property Parent: TWidget read FParent;
-    property UserEventProc: TWidgetUserEventProc read FUserEventProc write FUserEventProc;
+    property VidgetClassName: UnicodeString read FClassName;
+    property Parent: TVidget read FParent;
+    property UserEventProc: TVidgetUserEventProc read FUserEventProc write FUserEventProc;
   end;
 
   // list of idget "class" declaration records
@@ -94,27 +94,27 @@ implementation
 uses
   uVidgetsProcs;
 
-{ TRootWidget }
+{ TRootVidget }
 
-procedure TWidget.AddChild(const Child: TChildWidget);
+procedure TVidget.AddChild(const Child: TChildVidget);
 begin
   if FChilds.IndexOf(Child) < 0 then
     FChilds.Add(Child);
 end;
 
-constructor TWidget.Create(const Color: Cardinal; const Width, Height: LongInt);
+constructor TVidget.Create(const Color: Cardinal; const Width, Height: LongInt);
 begin
   inherited Create;
 
-  FChilds := TList<TChildWidget>.Create;
-  FWidgetProps.Color := Color;
-  FWidgetProps.Dimensions.Left := 0;
-  FWidgetProps.Dimensions.Top := 0;
-  FWidgetProps.Dimensions.Width := Width;
-  FWidgetProps.Dimensions.Height := Height;
+  FChilds := TList<TChildVidget>.Create;
+  FVidgetProps.Color := Color;
+  FVidgetProps.Dimensions.Left := 0;
+  FVidgetProps.Dimensions.Top := 0;
+  FVidgetProps.Dimensions.Width := Width;
+  FVidgetProps.Dimensions.Height := Height;
 end;
 
-destructor TWidget.Destroy;
+destructor TVidget.Destroy;
 begin
   FreeChilds; // here will destroyed all created vidgets, so there is not needed to free them manually
   FChilds.Free;
@@ -122,7 +122,7 @@ begin
   inherited Destroy;
 end;
 
-function TWidget.Event(const EventAPI: TEventAPI): Boolean;
+function TVidget.Event(const EventAPI: TEventAPI): Boolean;
 var
   i: Integer;
 begin
@@ -139,38 +139,38 @@ begin
       Dec(i);
 end;
 
-procedure TWidget.FreeChilds;
+procedure TVidget.FreeChilds;
 begin
   // not so optimal, but in case of mutating FChilds during loop, is not worst solution
   while FChilds.Count > 0 do
     FChilds[0].Free;
 end;
 
-function TWidget.GetColor: Cardinal;
+function TVidget.GetColor: Cardinal;
 begin
-  Result := FWidgetProps.Color;
+  Result := FVidgetProps.Color;
 end;
 
-function TWidget.GetDimensions: TWidgetDimensions;
+function TVidget.GetDimensions: TVidgetDimensions;
 begin
-  Result := FWidgetProps.Dimensions;
+  Result := FVidgetProps.Dimensions;
 end;
 
-function TWidget.GetID: NativeUInt;
+function TVidget.GetID: NativeUInt;
 begin
   Result := 0;
 end;
 
-procedure TWidget.NeedRepaint;
+procedure TVidget.NeedRepaint;
 begin
   VgRepaint;
 end;
 
-procedure TWidget.Paint(const PaintAPI: TPaintAPI);
+procedure TVidget.Paint(const PaintAPI: TPaintAPI);
 var
   i: Integer;
 begin
-  PaintAPI.FillRect(FWidgetProps.Color, 0, 0, FWidgetProps.Dimensions.Width, FWidgetProps.Dimensions.Height);
+  PaintAPI.FillRect(FVidgetProps.Color, 0, 0, FVidgetProps.Dimensions.Width, FVidgetProps.Dimensions.Height);
 
   // yes, overlapping of the vidgets is realized by sequential paint them from bottom to top
   // yes, this is may be extremally not optimal
@@ -179,7 +179,7 @@ begin
     FChilds[i].Paint(PaintAPI);
 end;
 
-procedure TWidget.RemoveChild(const Child: TChildWidget);
+procedure TVidget.RemoveChild(const Child: TChildVidget);
 var
   Idx: Integer;
 begin
@@ -188,30 +188,30 @@ begin
     FChilds.Delete(Idx);
 end;
 
-procedure TWidget.SetColor(const Value: Cardinal);
+procedure TVidget.SetColor(const Value: Cardinal);
 begin
-  if Value <> FWidgetProps.Color then
+  if Value <> FVidgetProps.Color then
     begin
-      FWidgetProps.Color := Value;
+      FVidgetProps.Color := Value;
       NeedRepaint;
     end;
 end;
 
-function TWidget.WidgetByID(const ID: NativeUInt): TChildWidget;
+function TVidget.VidgetByID(const ID: NativeUInt): TChildVidget;
 begin
-  Result := TChildWidget(ID); // yes, there is some cheating, any list of persistent ID must be used in the normal project
+  Result := TChildVidget(ID); // yes, there is some cheating, any list of persistent ID must be used in the normal project
 end;
 
-{ TChildWidget }
+{ TChildVidget }
 
-constructor TChildWidget.Create(const ClassName: string; const Parent: TWidget; const WidgetData: TWidgetProps; const PaintProc: TWidgetPaintProc; const SystemEventProc: TWidgetSystemEventProc; const UserData: Pointer);
+constructor TChildVidget.Create(const ClassName: string; const Parent: TVidget; const VidgetData: TVidgetProps; const PaintProc: TVidgetPaintProc; const SystemEventProc: TVidgetSystemEventProc; const UserData: Pointer);
 begin
-  inherited Create(WidgetData.Color, WidgetData.Dimensions.Width, WidgetData.Dimensions.Height);
+  inherited Create(VidgetData.Color, VidgetData.Dimensions.Width, VidgetData.Dimensions.Height);
 
   FClassName := UpperCase(ClassName);
   FParent := Parent;
-  FWidgetProps.Dimensions.Left := Parent.Dimensions.Left + WidgetData.Dimensions.Left;
-  FWidgetProps.Dimensions.Top := Parent.Dimensions.Top + WidgetData.Dimensions.Top;
+  FVidgetProps.Dimensions.Left := Parent.Dimensions.Left + VidgetData.Dimensions.Left;
+  FVidgetProps.Dimensions.Top := Parent.Dimensions.Top + VidgetData.Dimensions.Top;
   FPaintProc := PaintProc;
   FSystemEventProc := SystemEventProc;
   FUserData := UserData;
@@ -221,18 +221,18 @@ begin
   FParent.AddChild(Self);
 end;
 
-destructor TChildWidget.Destroy;
+destructor TChildVidget.Destroy;
 begin
   FParent.RemoveChild(Self);
 
   inherited Destroy;
 end;
 
-function TChildWidget.DoEvent(const EventAPI: TEventAPI): Boolean;
+function TChildVidget.DoEvent(const EventAPI: TEventAPI): Boolean;
 begin
   if Assigned(FSystemEventProc) then
     begin
-      FSystemEventProc(PWideChar(FClassName), ID, EventAPI, @FWidgetProps, FUserData);
+      FSystemEventProc(PWideChar(FClassName), ID, EventAPI, @FVidgetProps, FUserData);
       NeedRepaint;
       Result := True;
     end
@@ -240,20 +240,20 @@ begin
     Result := False;
 end;
 
-procedure TChildWidget.DoPaint(const PaintAPI: TPaintAPI);
+procedure TChildVidget.DoPaint(const PaintAPI: TPaintAPI);
 var
-  LocWidgetProps: TWidgetProps;
+  LocVidgetProps: TVidgetProps;
 begin
   if Assigned(FPaintProc) then
     begin
-      LocWidgetProps := FWidgetProps;
-      NormalizeDimensions(LocWidgetProps.Dimensions);
-      FPaintProc(PWideChar(FClassName), ID, PaintAPI, @LocWidgetProps, FUserData);
-      FWidgetProps.Color := LocWidgetProps.Color;
+      LocVidgetProps := FVidgetProps;
+      NormalizeDimensions(LocVidgetProps.Dimensions);
+      FPaintProc(PWideChar(FClassName), ID, PaintAPI, @LocVidgetProps, FUserData);
+      FVidgetProps.Color := LocVidgetProps.Color;
     end;
 end;
 
-function TChildWidget.Event(const EventAPI: TEventAPI): Boolean;
+function TChildVidget.Event(const EventAPI: TEventAPI): Boolean;
 var
   i: Integer;
 begin
@@ -281,24 +281,24 @@ begin
     end;
 end;
 
-function TChildWidget.GetID: NativeUInt;
+function TChildVidget.GetID: NativeUInt;
 begin
-  Result := NativeUInt(Self); // see comment for TWidget.WidgetByID
+  Result := NativeUInt(Self); // see comment for TVidget.VidgetByID
 end;
 
-function TChildWidget.GetWidgetProps: TWidgetProps;
+function TChildVidget.GetVidgetProps: TVidgetProps;
 begin
-  Result.Color := FWidgetProps.Color;
-  Result.Dimensions := FWidgetProps.Dimensions;
+  Result.Color := FVidgetProps.Color;
+  Result.Dimensions := FVidgetProps.Dimensions;
 end;
 
-function TChildWidget.InRange(const Point: TPoint): Boolean;
+function TChildVidget.InRange(const Point: TPoint): Boolean;
 begin
-  Result := (Point.X >= Dimensions.Left) and (Point.X <= Dimensions.Left + FWidgetProps.Dimensions.Width) and
-            (Point.Y >= Dimensions.Top) and (Point.Y <= Dimensions.Top + FWidgetProps.Dimensions.Height);
+  Result := (Point.X >= Dimensions.Left) and (Point.X <= Dimensions.Left + FVidgetProps.Dimensions.Width) and
+            (Point.Y >= Dimensions.Top) and (Point.Y <= Dimensions.Top + FVidgetProps.Dimensions.Height);
 end;
 
-procedure TChildWidget.NormalizeDimensions(var Dimensions: TWidgetDimensions);
+procedure TChildVidget.NormalizeDimensions(var Dimensions: TVidgetDimensions);
 begin
   if Dimensions.Left < Parent.Dimensions.Left then
     Dimensions.Left := Parent.Dimensions.Left;
@@ -310,20 +310,20 @@ begin
     Dimensions.Height := Parent.Dimensions.Height - Parent.Dimensions.Top;
 end;
 
-procedure TChildWidget.Paint(const PaintAPI: TPaintAPI);
+procedure TChildVidget.Paint(const PaintAPI: TPaintAPI);
 var
   i: Integer;
 begin
   if FVisible then
     begin
       DoPaint(PaintAPI);
-      // see comment for TWidget.Paint
+      // see comment for TVidget.Paint
       for i := 0 to FChilds.Count - 1 do
         FChilds[i].Paint(PaintAPI);
     end;
 end;
 
-procedure TChildWidget.SetVisible(const Value: Boolean);
+procedure TChildVidget.SetVisible(const Value: Boolean);
 begin
   if Value <> FVisible then
     begin
@@ -334,7 +334,7 @@ end;
 
 { TClassHeader }
 
-class function TClassHeader.Create(const Name: UnicodeString; const PaintProc: TWidgetPaintProc; const EventProc: TWidgetSystemEventProc): TClassHeader;
+class function TClassHeader.Create(const Name: UnicodeString; const PaintProc: TVidgetPaintProc; const EventProc: TVidgetSystemEventProc): TClassHeader;
 begin
   Result.Name := UpperCase(Name);
   Result.PaintProc := PaintProc;
